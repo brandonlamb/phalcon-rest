@@ -1,12 +1,15 @@
 <?php
 
-use \Phalcon\Loader as PhLoader,
-	\Phalcon\Mvc\Url as PhUrl,
+use \Phalcon\Mvc\Url as PhUrl,
 	\Phalcon\Mvc\View as PhView,
 	\Phalcon\Mvc\Dispatcher as PhDispatcher,
 	\Phalcon\Logger\Adapter\File as PhLogger,
 	\Phalcon\Session\Adapter\Files as PhSession;
 
+/**
+ * Application class is responsible for setting up and initializing resources, services
+ * and configuration, then handling the request and sending response
+ */
 class Application extends \Phalcon\Mvc\Application
 {
 	/**
@@ -14,6 +17,9 @@ class Application extends \Phalcon\Mvc\Application
 	 */
 	public function main()
 	{
+		// Include debug functions
+		require_once \ROOT . '/application/config/debug.php';
+
 		// Register new Dependency Injector
 		$di = $this->getDI();
 
@@ -22,16 +28,17 @@ class Application extends \Phalcon\Mvc\Application
 			return require_once __DIR__ . '/config/config.php';
 		});
 
+		// Setup autoloading
 		$this->registerAutoloaders();
+
+		// Setup resources/services
 		$this->registerServices();
 
 		//Register the installed modules
-		$this->registerModules(array(
-			'main' => array(
-				'className' => 'Main\Module',
-				'path' => \PATH . '/application/main/Module.php'
-			),
-		));
+		$this->registerModules($di->getShared('config')->modules->toArray());
+
+		// Set default module to latest version
+		$this->setDefaultModule('v1');
 
 		return $this;
 	}
@@ -41,36 +48,12 @@ class Application extends \Phalcon\Mvc\Application
 	 */
 	protected function registerAutoloaders()
 	{
-		$di = $this->getDI();
-
-		$di->setShared('loader', function() use ($di) {
-			$loader = new PhLoader();
-
-			// Register namespaces
-			$loader->registerNamespaces(array(
-				'PhalconRest\Models' => __DIR__ . '/models/',
-				'PhalconRest\Controllers' => __DIR__ . '/controllers/',
-				'PhalconRest\Exceptions' => __DIR__ . '/exceptions/',
-				'PhalconRest\Responses' => __DIR__ . '/responses/',
-				'Sbux' => \PATH . '/vendor/Sbux/src/Sbux/',
-			))->register();
-
-			// Register non-module directories
-			$loader->registerDirs(array(
-				$config->phalcon->controllersDir,
-				$config->phalcon->modelsDir,
-				$config->phalcon->pluginsDir,
-			));
-
-			// Register specific classes
-			$loader->registerClasses(array(
-				'UIElements' => \PATH . '/vendor/UIElements/UIElements.php'
-			));
-
-			return $loader;
+		$config = $this->di->getShared('config');
+		$this->di->setShared('loader', function() use ($config) {
+			return require_once \ROOT . '/application/config/loader.php';
 		});
 
-		return $this->loader->register();
+		$this->loader->register();
 	}
 
 	/**
@@ -83,8 +66,8 @@ class Application extends \Phalcon\Mvc\Application
 
 		// Registering a router
 		$di->setShared('router', function() use ($config) {
-			return require_once \PATH . '/application/config/routes.php';
-		});	
+			return require_once \ROOT . '/application/config/router.php';
+		});
 
 		// The URL component is used to generate all kind of urls in the protectedlication
 		$di->setShared('url', function() use ($config) {
@@ -99,29 +82,32 @@ class Application extends \Phalcon\Mvc\Application
 			$dispatcher->setDefaultNamespace($config->phalcon->defaultNamespace);
 			$dispatcher->setDefaultController($config->phalcon->defaultController);
 			$dispatcher->setDefaultAction($config->phalcon->defaultAction);
-			
+
 			return $dispatcher;
-		});		
+		});
 
 		// Registering the view component
 		$di->setShared('view', function() {
 			$view = new PhView();
-			$view->setViewsDir(\PATH . '/application/views/');
+			$view->setViewsDir(\ROOT . '/application/views/');
 			$view->setMainView('index');
-		
+
 			return $view;
 		});
 
 		// Registering logger
 		$di->setShared('logger', function () use ($config) {
-			return new PhLogger(\PATH . $config->phalcon->logsDir . $config->phalcon->logFile, array('mode' => 'a+'));
+			return new PhLogger(
+				\ROOT . $config->phalcon->logsDir . 'application-' . strftime('%Y-%m-%d') . '.log',
+				array('mode' => 'a+')
+			);
 		});
 
 		// As soon as we request the session service, it will be started.
 		$di->setShared('session', function(){
 			$session = new PhSession();
 			$session->start();
-			
+
 			return $session;
 		});
 
@@ -146,51 +132,6 @@ class Application extends \Phalcon\Mvc\Application
 
 			return $in;
 		});
-
-
-		// Registering a Http\Response 
-#		$di->set('response', function() {
-#			return new \Phalcon\Http\Response();
-#		});
-
-		// Registering a Http\Request
-#		$di->set('request', function() {
-#			return new \Phalcon\Http\Request();
-#		});
-
-		// Registering the database component	
-#		$di->setShared('db', function() {
-#			return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
-#				"host" => "localhost",
-#				"username" => "root",
-#				"password" => "hea101",
-#				"dbname" => "invo"
-#			));
-#		});
-
-		// Registering the Models-Metadata
-#		$di->set('modelsMetadata', function() {
-#			return new \Phalcon\Mvc\Model\Metadata\Memory();
-#		});
-
-		// Registering the Models Manager
-#		$di->set('modelsManager', function() {
-#			return new \Phalcon\Mvc\Model\Manager();
-#		});
-
-#		$di->set('modelsCache', function() {
-#			//Cache data for one day by default
-#			$frontCache = new \Phalcon\Cache\Frontend\Data(array(
-#				'lifetime' => 3600
-#			));
-
-			//File cache settings
-#			$cache = new \Phalcon\Cache\Backend\File($frontCache, array(
-#				'cacheDir' => __DIR__ . '/cache/'
-#			));
-
-#			return $cache;
-#		});
 	}
 }
 

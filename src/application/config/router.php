@@ -3,23 +3,27 @@
 $router = new \Phalcon\Mvc\Router();
 $router->setDefaultModule($config->phalcon->defaultModule);
 
-$router->add("/news/([0-9]{4})/([0-9]{2})/([a-z0-9\-]+)", array(
-    'controller' => 'news',
-    'action' => 'show',
-    'year' => 1,
-    'title' => 3
-));
+// Add REST API matches for each HTTP Method
+foreach (array('GET', 'POST', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'PATH') as $method) {
+	$router->add(
+		'/:module/:controller/:params',
+		array(
+			'module' => 1,
+			'controller' => 2,
+			'params' => 3,
+			'action' => strtolower($method),
+		)
+	)->setHttpMethods($method);
 
-$router->add("/news/([0-9]{4})", array(
-    'controller' => 'news',
-    'action' => 'showYear',
-    'year' => 1
-));
-
-$router->add("/set-language/([a-z0-9\-]+)", array(
-    'controller' => 'index',
-    'action' => 'setLanguage',
-    'language' => 1
-));
+	$router->add(
+		'/:version/:resource/:id1/:relation/:params',
+		array(
+			'module' => 1,
+			'controller' => 2,
+			'params' => 3,
+			'action' => strtolower($method),
+		)
+	)->setHttpMethods($method);
+}
 
 return $router;

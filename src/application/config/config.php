@@ -20,7 +20,7 @@ return new \Phalcon\Config(array(
 		'defaultModule'		=> 'v1',
 		'defaultController'	=> 'index',
 		'defaultAction'		=> 'index',
-		'logFile'			=> \PATH . '/application/runtime/application.log',
+		'logFile'			=> \ROOT . '/application/runtime/application.log',
 	),
 
 	'models' => array(
@@ -28,5 +28,17 @@ return new \Phalcon\Config(array(
 			'adapter'	=> 'Apc',
 			'lifetime'	=> 86400
 		)
+	),
+
+	'modules' => array(
+		'v1' => array(
+			'className' => 'Api\\Module',
+			'path' => \ROOT . '/application/modules/v1/Module.php'
+		),
+		
+		'v2' => array(
+			'className' => 'Api\\Module',
+			'path' => \ROOT . '/application/modules/v2/Module.php'
+		),
 	),
 ));

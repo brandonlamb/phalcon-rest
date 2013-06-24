@@ -1,14 +1,16 @@
 <?php
-namespace PhalconRest\Exceptions;
 
-class HTTPException extends \Exception{
+namespace Api\Exceptions;
 
+class Http extends \Exception
+{
 	public $devMessage;
 	public $errorCode;
 	public $response;
 	public $additionalInfo;
 
-	public function __construct($message, $code, $errorArray){
+	public function __construct($message, $code, $errorArray)
+	{
 		$this->message = $message;
 		$this->devMessage = @$errorArray['dev'];
 		$this->errorCode = @$errorArray['internalCode'];
@@ -17,19 +19,19 @@ class HTTPException extends \Exception{
 		$this->response = $this->getResponseDescription($code);
 	}
 
-	public function send(){
+	public function send()
+	{
 		$di = \Phalcon\DI::getDefault();
-
 		$res = $di->get('response');
 		$req = $di->get('request');
-		
-			//query string, filter, default
-		if(!$req->get('suppress_response_codes', null, null)){
+
+		//query string, filter, default
+		if (!$req->get('suppress_response_codes', null, null)) {
 			$res->setStatusCode($this->getCode(), $this->response)->sendHeaders();
 		} else {
-			$res->setStatusCode('200', 'OK')->sendHeaders();
+			$res->setStatusCode(200, 'OK')->sendHeaders();
 		}
-		
+
 		$error = array(
 			'errorCode' => $this->getCode(),
 			'userMessage' => $this->getMessage(),
@@ -38,20 +40,17 @@ class HTTPException extends \Exception{
 			'applicationCode' => $this->errorCode,
 		);
 
-		if(!$req->get('type') || $req->get('type') == 'json'){
+		if (!$req->get('type') || $req->get('type') == 'json') {
 			$response = new \PhalconRest\Responses\JSONResponse();
-			$response->send($error, true);	
+			$response->send($error, true);
 			return;
-		} else if($req->get('type') == 'csv'){
+		} else if ($req->get('type') == 'csv') {
 			$response = new \PhalconRest\Responses\CSVResponse();
 			$response->send(array($error));
 			return;
 		}
-		
-		error_log(
-			'HTTPException: ' . $this->getFile() .
-			' at ' . $this->getLine()
-		);
+
+		error_log('HttpException: ' . $this->getFile() . ' at ' . $this->getLine());
 
 		return true;
 	}
@@ -59,7 +58,6 @@ class HTTPException extends \Exception{
 	protected function getResponseDescription($code)
 	{
 		$codes = array(
-
 			// Informational 1xx
 			100 => 'Continue',
 			101 => 'Switching Protocols',
@@ -113,10 +111,6 @@ class HTTPException extends \Exception{
 			509 => 'Bandwidth Limit Exceeded'
 		);
 
-		$result = (isset($codes[$code])) ?
-			$codes[$code]          :
-			'Unknown Status Code';
-
-		return $result;
+		return (isset($codes[$code])) ? $codes[$code] : 'Unknown Status Code';
 	}
 }
