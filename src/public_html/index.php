@@ -1,94 +1,30 @@
 <?php
+// Overhead: 0.34, 0.00034, 654K
+define('START_TIME', microtime(true));
+define('DOCROOT', dirname(__FILE__));
+define('PATH', dirname(DOCROOT));
 
-use Phalcon\DI\FactoryDefault as DefaultDI,
-	Phalcon\Mvc\Micro\Collection,
-	Phalcon\Config\Adapter\Ini as IniConfig,
-	Phalcon\Loader;
+try {
+	// Get an Application instance
+	$app = require_once PATH . '/application/Application.php';
 
-/** 
- * By default, namespaces are assumed to be the same as the path.
- * This function allows us to assign namespaces to alternative folders.
- * It also puts the classes into the PSR-0 autoLoader.
- */
-$loader = new Loader();
-$loader->registerNamespaces(array(
-	'PhalconRest\Models' => __DIR__ . '/models/',
-	'PhalconRest\Controllers' => __DIR__ . '/controllers/',
-	'PhalconRest\Exceptions' => __DIR__ . '/exceptions/',
-	'PhalconRest\Responses' => __DIR__ . '/responses/'
-))->register();
+	// If the application throws an HTTPException, send it on to the client as json. Elsewise, just log it
+	set_exception_handler(function($exception) use ($app) {
+		// HTTPException's send method provides the correct response headers and body
+		if (is_a($exception, 'PhalconRest\\Exceptions\\HTTPException')) {
+			$exception->send();
+		}
+		error_log($exception);
+		error_log($exception->getTraceAsString());
+	});
 
-/**
- * The DI is our direct injector.  It will store pointers to all of our services
- * and we will insert it into all of our controllers.
- * @var DefaultDI
- */
-$di = new DefaultDI();
+	$app->main()->handle()->send();
+	!$app->request->isAjax() && bench();
+} catch (\Exception $e) {
+	echo '<pre>FATAL: ', $e->getMessage(), dump($e), '</pre>';
+}
 
-/**
- * $di's setShared method provides a singleton instance.
- * If the second parameter is a function, then the service is lazy-loaded
- * on its first instantiation.
- */
-$di->setShared('config', function() {
-	return new IniConfig("config/config.ini");
-});
 
-// As soon as we request the session service, it will be started.
-$di->setShared('session', function(){
-	$session = new \Phalcon\Session\Adapter\Files();
-	$session->start();
-	return $session;
-});
-
-$di->set('modelsCache', function() {
-
-	//Cache data for one day by default
-	$frontCache = new \Phalcon\Cache\Frontend\Data(array(
-		'lifetime' => 3600
-	));
-
-	//File cache settings
-	$cache = new \Phalcon\Cache\Backend\File($frontCache, array(
-		'cacheDir' => __DIR__ . '/cache/'
-	));
-
-	return $cache;
-});
-
-/**
- * If our request contains a body, it has to be valid JSON.  This parses the 
- * body into a standard Object and makes that vailable from the DI.  If this service
- * is called from a function, and the request body is nto valid JSON or is empty,
- * the program will throw an Exception.
- */
-$di->setShared('requestBody', function() {
-	$in = file_get_contents('php://input');
-	$in = json_decode($in, FALSE);
-
-	// JSON body could not be parsed, throw exception
-	if($in === null){
-		throw new HTTPException(
-			'There was a problem understanding the data sent to the server by the application.',
-			409,
-			array(
-				'dev' => 'The JSON body sent to the server was unable to be parsed.',
-				'internalCode' => 'REQ1000',
-				'more' => ''
-			)
-		);
-	}
-
-	return $in;
-});
-
-/**
- * Out application is a Micro application, so we mush explicitly define all the routes.
- * For APIs, this is ideal.  This is as opposed to the more robust MVC Application
- * @var $app
- */
-$app = new Phalcon\Mvc\Micro();
-$app->setDI($di);
 
 /**
  * Before every request, make sure user is authenticated.
