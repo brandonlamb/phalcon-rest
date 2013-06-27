@@ -1,4 +1,5 @@
 <?php
+
 $in = json_decode(file_get_contents('php://input'), false);
 
 // JSON body could not be parsed, throw exception

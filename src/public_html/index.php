@@ -5,22 +5,12 @@ define('DOCROOT', dirname(__FILE__));
 define('ROOT', dirname(DOCROOT));
 
 try {
-	// Get an Application instance
-	$app = require_once \ROOT . '/application/Application.php';
-	$app->main();
-	
-	// If the application throws an HTTPException, send it on to the client as json. Elsewise, just log it
-	set_exception_handler(function($exception) use ($app) {
-		// HTTPException's send method provides the correct response headers and body
-		if (is_a($exception, 'PhalconRest\\Exceptions\\HTTPException')) {
-			$exception->send();
-		}
-		error_log($exception);
-		error_log($exception->getTraceAsString());
-	});
+	!defined('ROOT_PATH') && define('ROOT_PATH', dirname(dirname(__FILE__)));
+	require_once ROOT_PATH . '/application/library/App/Error.php';
 
-	$app->handle();
-	!$app->request->isAjax() && bench();
+	// Using require once because I want to get the specific bootloader class here.
+	$app = require_once ROOT_PATH . '/application/library/App/Bootstrap.php';
+	echo $app->run();
 } catch (\Exception $e) {
 	echo '<pre>FATAL: ', $e->getMessage(), dump($e), '</pre>';
 }

@@ -27,3 +27,21 @@ foreach (array('GET', 'POST', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'PATH') as $me
 }
 
 return $router;
+
+/*
+$router->add('/documentation/([a-zA-Z0-9_]+)', array(
+	'controller'	=> 'documentation',
+	'action'		=> 'redirect',
+	'name'			=> 1,
+));
+
+$router->add('/documentation/index', array(
+	'controller'	=> 'documentation',
+	'action'		=> 'index',
+));
+
+$router->add('/documentation', array(
+	'controller'	=> 'documentation',
+	'action'		=> 'index',
+));
+*/

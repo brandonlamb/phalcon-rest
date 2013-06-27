@@ -1,6 +1,35 @@
 <?php
 
 return new \Phalcon\Config(array(
+	'app' => array(
+		'baseUri'			=> '/',
+		'cache'				=> array(
+			'cacheDir'		=> '/app/var/cache/',
+			'lifetime'		=> 86400,
+		),
+		'defaultNamespace'	=> '',
+		'defaultModule'		=> 'v1',
+		'defaultController'	=> 'index',
+		'defaultAction'		=> 'get',
+		'env'				=> array('dev' => true),
+		'path'				=> array(
+			'config'		=> \ROOT_PATH . '/application/config',
+			'controllers'	=> \ROOT_PATH . '/application/controllers',
+			'library'		=> \ROOT_PATH . '/application/library',
+			'logs'			=> \ROOT_PATH . '/application/logs',
+			'models'		=> \ROOT_PATH . '/application/models',
+			'plugins'		=> \ROOT_PATH . '/application/plugins',
+			'views'			=> \ROOT_PATH . '/application/views',
+
+		),
+		'volt'				=> array(
+			'path'			=> \ROOT_PATH . '/application/cache/volt',
+			'extension'		=> '.php',
+			'separator'		=> '%%',
+			'stat'			=> 1,
+		),
+	),
+
 	'database' => array(
 		'adapter'	=> 'db2',
 		'host'		=> 'dsn',
@@ -9,18 +38,8 @@ return new \Phalcon\Config(array(
 		'name'		=> 'db2_rw'
 	),
 
-	'phalcon' => array(
-		'controllersDir'	=> '/application/controllers',
-		'modelsDir'			=> '/application/models',
-		'viewsDir'			=> '/application/views',
-		'pluginsDir'		=> '/application/plugins',
-		'logsDir'			=> '/application/logs',
-		'baseUri'			=> '/',
-		'defaultNamespace'	=> '',
-		'defaultModule'		=> 'v1',
-		'defaultController'	=> 'index',
-		'defaultAction'		=> 'index',
-		'logFile'			=> \ROOT . '/application/runtime/application.log',
+	'logger' => array(
+		'file' => \ROOT_PATH . '/application/runtime/logs/application-' . strftime('%Y-%m-%d') . '.log',
 	),
 
 	'models' => array(
@@ -33,12 +52,12 @@ return new \Phalcon\Config(array(
 	'modules' => array(
 		'v1' => array(
 			'className' => 'Api\\Module',
-			'path' => \ROOT . '/application/modules/v1/Module.php'
+			'path' => \ROOT_PATH . '/application/modules/v1/Module.php'
 		),
-		
+
 		'v2' => array(
 			'className' => 'Api\\Module',
-			'path' => \ROOT . '/application/modules/v2/Module.php'
+			'path' => \ROOT_PATH . '/application/modules/v2/Module.php'
 		),
 	),
 ));
