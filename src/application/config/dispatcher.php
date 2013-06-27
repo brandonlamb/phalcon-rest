@@ -14,9 +14,9 @@ $evManager->attach('dispatch:beforeException', function($event, $dispatcher, $ex
 });
 
 $dispatcher = new \Phalcon\Mvc\Dispatcher();
-$dispatcher->setEventsManager($evManager);
 $dispatcher->setDefaultNamespace($config->app->defaultNamespace);
 $dispatcher->setDefaultController($config->app->defaultController);
 $dispatcher->setDefaultAction($config->app->defaultAction);
+$dispatcher->setEventsManager($evManager);
 
 return $dispatcher;

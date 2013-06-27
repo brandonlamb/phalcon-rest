@@ -78,8 +78,16 @@ class Bootstrap
 		$this->initRequestBody($config, $options);
 
 #		return $this->app->handle()->getContent();
-		$this->app->handle();
-		!$this->app->request->isAjax() && bench();
+#		return $this->app->handle();
+		$response1 = $this->app->handle();
+		$response2 = $this->di->getShared('response');
+d($response1);
+echo $response->send();
+#$dispatcher = $this->di->getShared('dispatcher');
+#$dispatcher->getEventsManager()->fire('dispatch:afterExcecuteRoute', $dispatcher);
+#d($response->getContent());
+
+#		!$this->app->request->isAjax() && bench();
 	}
 
 	/**
@@ -172,7 +180,7 @@ class Bootstrap
 	 */
 	public function initRouter($config, $options)
 	{
-		$this->di->set('router', function() {
+		$this->di->set('router', function() use ($config) {
 			return require_once \ROOT_PATH . '/application/config/router.php';
 		});
 	}
@@ -278,6 +286,17 @@ class Bootstrap
 		$this->di->set('requestBody', function() use ($config) {
 			require_once $config->app->path->config . '/request-body.php';
 		}, true);
+	}
+
+	/**
+	 * Initializes the response
+	 *
+	 * @param \Phalcon\Config $config
+	 * @param array $options
+	 */
+	public function initResponse($config, $options)
+	{
+		$this->di->set('response', '\\Phalcon\\Http\\Response', true);
 	}
 }
 

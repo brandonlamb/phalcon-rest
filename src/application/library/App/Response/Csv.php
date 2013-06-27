@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Response;
+namespace App\Response;
 
 class Csv extends AbstractResponse
 {

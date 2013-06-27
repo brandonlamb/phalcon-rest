@@ -1,24 +1,19 @@
 <?php
 
-namespace Api\Controller;
+namespace App\Controller;
 
 use \Phalcon\DI\Injectable as PhInjectable,
 	\Phalcon\DI as Di,
 	\Phalcon\Tag as Tag,
-	\Api\Exceptions\Http as HttpException;
+	\App\Exception\Http as HttpException;
 
 /**
- * Base RESTful Controller.
+ * Base REST controller
  * Supports queries with the following paramters:
- *   Searching:
- *     q=(searchField1:value1,searchField2:value2)
- *   Partial Responses:
- *     fields=(field1,field2,field3)
- *   Limits:
- *     limit=10
- *   Partials:
- *     offset=20
- *
+ *   Searching: q=(searchField1:value1,searchField2:value2)
+ *   Partial Responses: fields=(field1,field2,field3)
+ *   Limits: limit=10
+ *   Partials: offset=20
  */
 class Base extends PhInjectable
 {
@@ -40,49 +35,25 @@ class Base extends PhInjectable
 	 * Set when there is a 'limit' query parameter
 	 * @var integer
 	 */
-	protected $limit = null;
+	protected $limit;
 
 	/**
 	 * Set when there is an 'offset' query parameter
 	 * @var integer
 	 */
-	protected $offset = null;
+	protected $offset;
 
 	/**
 	 * Array of fields requested to be searched against
 	 * @var array
 	 */
-	protected $searchFields = null;
+	protected $searchFields;
 
 	/**
 	 * Array of fields requested to be returned
 	 * @var array
 	 */
-	protected $partialFields = null;
-
-	/**
-	 * Constructor calls the parse method.
-	 */
-	public function __construct()
-	{
-		//parent::__construct();
-		$this->setDI(Di::getDefault());
-		$this->parseRequest($this->allowedFields);
-	}
-
-	public function initialize()
-	{
-		Tag::prependTitle('Starbucks - ');
-#		$this->loadMainTrans();
-	}
-
-	protected function forward($uri)
-	{
-		$uriParts = explode('/', $uri);
-		return $this->dispatcher->forward(
-			array('controller' => $uriParts[0], 'action' => $uriParts[1])
-		);
-	}
+	protected $partialFields;
 
 	/**
 	 * Sets which fields may be searched against, and which fields are allowed to be returned in
@@ -95,6 +66,146 @@ class Base extends PhInjectable
 		'partials'	=> array(),
 	);
 
+	/**
+	 * @var array
+	 */
+	protected $data = array();
+
+	/**
+	 * Constructor calls the parse method.
+	 * We override __construct() because we cannot call parent::__construct()
+	 */
+	public function __construct()
+	{
+		$this->setDI(Di::getDefault());
+		$this->parseRequest($this->allowedFields);
+	}
+
+	/**
+	 * Called before controller->action()
+	 */
+	public function initialize()
+	{
+#		Tag::prependTitle('Starbucks - ');
+#		$this->loadMainTrans();
+	}
+
+	public function beforeExecuteRoute(\Phalcon\Events\Event $event, \Phalcon\Mvc\Dispatcher $dispatcher)
+	{
+#d(__METHOD__);
+#echo __METHOD__ . "<br>\n";
+	}
+
+	public function afterExecuteRoute(\Phalcon\Events\Event $event, \Phalcon\Mvc\Dispatcher $dispatcher)
+	{
+		$request = $this->request;
+
+		// OPTIONS have no body, send the headers, exit
+		if ($request->getMethod() == 'OPTIONS') {
+			$this->response->setStatusCode('200', 'OK');
+			$this->response->send();
+			return;
+		}
+
+		// Respond by default as JSON
+		if (!$request->get('type') || $request->get('type') == 'json') {
+			// Results returned from the route's controller.  All Controllers should return an array
+			$records = $this->dispatcher->getReturnedValue();
+			$response = new \App\Response\Json($this->di);
+			$response->useEnvelope(true) //this is default behavior
+				->convertSnakeCase(true) //this is also default behavior
+				->send($records);
+
+			return;
+		} else if ($request->get('type') == 'csv') {
+			$records = $this->dispatcher->getReturnedValue();
+			$response = new \App\Response\Csv();
+			$response->useHeaderRow(true)->send($records);
+
+			return;
+		} else {
+			throw new HttpException(
+				'Could not return results in specified format',
+				403,
+				array(
+					'dev' => 'Could not understand type specified by type paramter in query string.',
+					'internalCode' => 'NF1000',
+					'more' => 'Type may not be implemented. Choose either "csv" or "json"'
+				)
+			);
+		}
+	}
+
+	/**
+	 * Forward to another controller/action
+	 * @param string $uri
+	 */
+	protected function forward($uri)
+	{
+		$parts = explode('/', $uri);
+		return $this->dispatcher->forward(
+			array('controller' => $parts[0], 'action' => $parts[1])
+		);
+	}
+
+	/**
+	 * Main method for parsing a query string.
+	 * Finds search paramters, partial response fields, limits, and offsets.
+	 * Sets Controller fields for these variables.
+	 *
+	 * @param array $allowedFields Allowed fields array for search and partials
+	 * @return bool Always true if no exception is thrown
+	 */
+	protected function parseRequest($allowedFields)
+	{
+		$request = $this->di->get('request');
+		$searchParams = $request->get('q', null, null);
+		$fields = $request->get('fields', null, null);
+
+		// Set limits and offset, elsewise allow them to have defaults set in the Controller
+		$this->limit = ($request->get('limit', null, null)) ?: $this->limit;
+		$this->offset = ($request->get('offset', null, null)) ?: $this->offset;
+
+		// If there's a 'q' parameter, parse the fields, then determine that all the fields in the search
+		// are allowed to be searched from $allowedFields['search']
+		if ($searchParams) {
+			$this->isSearch = true;
+			$this->searchFields = $this->parseSearchParameters($searchParams);
+
+			// This handly snippet determines if searchFields is a strict subset of allowedFields['search']
+			if (!array_unique($allowedFields['search'] + $this->searchFields) === $allowedFields['search']) {
+				throw new HttpException(
+					"The fields you specified cannot be searched.",
+					401,
+					array(
+						'dev' => 'You requested to search fields that are not available to be searched.',
+						'internalCode' => 'S1000',
+						'more' => '' // Could have link to documentation here.
+				));
+			}
+		}
+
+		// If there's a 'fields' paramter, this is a partial request.
+		// Ensures all the requested fields are allowed in partial responses.
+		if ($fields) {
+			$this->isPartial = true;
+			$this->partialFields = $this->parsePartialFields($fields);
+
+			// Determines if fields is a strict subset of allowed fields
+			if (!array_unique($allowedFields['partials'] + $this->partialFields) === $allowedFields['partials']) {
+				throw new HttpException(
+					'The fields you asked for cannot be returned.',
+					401,
+					array(
+						'dev' => 'You requested to return fields that are not available to be returned in partial responses.',
+						'internalCode' => 'P1000',
+						'more' => '' // Could have link to documentation here.
+				));
+			}
+		}
+
+		return true;
+	}
 
 	/**
 	 * Parses out the search parameters from a request.
@@ -138,65 +249,6 @@ class Base extends PhInjectable
 	}
 
 	/**
-	 * Main method for parsing a query string.
-	 * Finds search paramters, partial response fields, limits, and offsets.
-	 * Sets Controller fields for these variables.
-	 *
-	 * @param  array $allowedFields Allowed fields array for search and partials
-	 * @return boolean              Always true if no exception is thrown
-	 */
-	protected function parseRequest($allowedFields)
-	{
-		$request = $this->di->get('request');
-		$searchParams = $request->get('q', null, null);
-		$fields = $request->get('fields', null, null);
-
-		// Set limits and offset, elsewise allow them to have defaults set in the Controller
-		$this->limit = ($request->get('limit', null, null)) ?: $this->limit;
-		$this->offset = ($request->get('offset', null, null)) ?: $this->offset;
-
-		// If there's a 'q' parameter, parse the fields, then determine that all the fields in the search
-		// are allowed to be searched from $allowedFields['search']
-		if ($searchParams) {
-			$this->isSearch = true;
-			$this->searchFields = $this->parseSearchParameters($searchParams);
-
-			// This handly snippet determines if searchFields is a strict subset of allowedFields['search']
-			if (!array_unique($allowedFields['search'] + $this->searchFields) === $allowedFields['search']) {
-				throw new HttpException(
-					"The fields you specified cannot be searched.",
-					401,
-					array(
-						'dev' => 'You requested to search fields that are not available to be searched.',
-						'internalCode' => 'S1000',
-						'more' => '' // Could have link to documentation here.
-				));
-			}
-		}
-
-		// If there's a 'fields' paramter, this is a partial request.  Ensures all the requested fields
-		// are allowed in partial responses.
-		if ($fields) {
-			$this->isPartial = true;
-			$this->partialFields = $this->parsePartialFields($fields);
-
-			// Determines if fields is a strict subset of allowed fields
-			if (!array_unique($allowedFields['partials'] + $this->partialFields) === $allowedFields['partials']) {
-				throw new HttpException(
-					'The fields you asked for cannot be returned.',
-					401,
-					array(
-						'dev' => 'You requested to return fields that are not available to be returned in partial responses.',
-						'internalCode' => 'P1000',
-						'more' => '' // Could have link to documentation here.
-				));
-			}
-		}
-
-		return true;
-	}
-
-	/**
 	 * Provides a base CORS policy for routes like '/users' that represent a Resource's base url
 	 * Origin is allowed from all urls.  Setting it here using the Origin header from the request
 	 * allows multiple Origins to be served.  It is done this way instead of with a wildcard '*'
@@ -233,6 +285,71 @@ class Base extends PhInjectable
 		return true;
 	}
 
+	/**
+	 * @param array $results
+	 */
+	public function respond($results)
+	{
+		if ($this->isPartial) {
+			$newResults = array();
+			$remove = array_diff(array_keys($this->exampleRecords[0]), $this->partialFields);
+			foreach ($results as $record) {
+				$newResults[] = $this->arrayRemoveKeys($record, $remove);
+			}
+			$results = $newResults;
+		}
+
+		if ($this->offset) {
+			$results = array_slice($results, $this->offset);
+		}
+
+		if ($this->limit) {
+			$results = array_slice($results, 0, $this->limit);
+		}
+
+		$this->view->setVar('data', $results);
+#		return $results;
+	}
+
+	private function arrayRemoveKeys($array, $keys = array())
+	{
+		// If array is empty or not an array at all, don't bother doing anything else.
+		if (empty($array) || (! is_array($array))) {
+			return $array;
+		}
+
+		// At this point if $keys is not an array, we can't do anything with it.
+		if (! is_array($keys)) {
+			return $array;
+		}
+
+		// array_diff_key() expected an associative array.
+		$assocKeys = array();
+		foreach ($keys as $key) {
+			$assocKeys[$key] = true;
+		}
+
+		return array_diff_key($array, $assocKeys);
+	}
+
+	public function searchAction()
+	{
+		$results = array();
+		foreach ($this->exampleRecords as $record) {
+			$match = true;
+			foreach ($this->searchFields as $field => $value) {
+				if (!(strpos($record[$field], $value) !== false)) {
+					$match = false;
+				}
+			}
+			if ($match) {
+				$results[] = $record;
+			}
+		}
+
+		return $results;
+	}
+
 	protected function getTransPath()
 	{
 		$translationPath = \PATH . '/application/main/messages/';
@@ -264,9 +381,9 @@ class Base extends PhInjectable
 		$this->view->setVar('mt', $mainTranslate);
 	  }
 
-	  /**
-	   * Loads a translation for the active controller
-	   */
+	/**
+	 * Loads a translation for the active controller
+	 */
 	public function loadCustomTrans($transFile)
 	{
 		$translationPath = $this->getTransPath();

@@ -14,8 +14,8 @@ class Module implements ModuleInterface
 	{
 		$loader = new \Phalcon\Loader();
 		$loader->registerNamespaces(array(
-			'Api\\Controllers' => \ROOT . '/application/modules/v1/controller/',
-			'Api\\Model' => \ROOT . '/application/modules/v1/model/',
+			'Api\\Controllers' => \ROOT_PATH . '/application/modules/v1/controller/',
+			'Api\\Model' => \ROOT_PATH . '/application/modules/v1/model/',
 		));
 		$loader->register();
 	}
@@ -26,7 +26,7 @@ class Module implements ModuleInterface
 	public function registerServices($di)
 	{
 		// Register the dispatcher
-		$di->setShared('dispatcher', function () {
+		$di->set('dispatcher', function () {
 			$dispatcher = new PhDispatcher();
 
 			// Attach a event listener to the dispatcher
@@ -35,20 +35,20 @@ class Module implements ModuleInterface
 
 			$dispatcher->setEventsManager($eventManager);
 			$dispatcher->setDefaultNamespace('Api\\Controllers\\');
-			
+
 			return $dispatcher;
-		});
+		}, true);
 
 		// Register the view component
-		$di->setShared('view', function () {
+		$di->set('view', function () {
 			$view = new PhView();
-			$view->setViewsDir(\ROOT . '/application/modules/v1/views/');
-			
+			$view->setViewsDir(\ROOT_PATH . '/application/modules/v1/views/');
+
 			// Use a shared view directory
 #			$view->setMainView('../../views/layouts/index');
 			$view->setMainView('index');
 
 			return $view;
-		});
+		}, true);
 	}
 }

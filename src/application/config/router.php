@@ -1,7 +1,7 @@
 <?php
 
 $router = new \Phalcon\Mvc\Router();
-$router->setDefaultModule($config->phalcon->defaultModule);
+$router->setDefaultModule($config->app->defaultModule);
 
 // Add REST API matches for each HTTP Method
 foreach (array('GET', 'POST', 'PUT', 'HEAD', 'OPTIONS', 'DELETE', 'PATH') as $method) {

@@ -21,6 +21,7 @@ class Http extends \Exception
 
 	public function send()
 	{
+d(__METHOD__);
 		$di = \Phalcon\DI::getDefault();
 		$res = $di->get('response');
 		$req = $di->get('request');

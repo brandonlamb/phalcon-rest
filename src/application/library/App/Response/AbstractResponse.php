@@ -1,16 +1,21 @@
 <?php
 
-namespace Api\Response;
+namespace App\Response;
 
 use \Phalcon\DI\Injectable as Injectable;
 
-abstract class Response extends Injectable
+abstract class AbstractResponse extends Injectable
 {
 	protected $head = false;
 
-	public function __construct()
+	public function __construct(\Phalcon\DiInterface $di = null)
 	{
-		$this->setDI(\Phalcon\DI::getDefault());
+		if (null === $di) {
+			$this->setDI(\Phalcon\DI::getDefault());
+		} else {
+			$this->setDI($di);
+		}
+
 		if (strtolower($this->di->get('request')->getMethod()) === 'head') {
 			$this->head = true;
 		}

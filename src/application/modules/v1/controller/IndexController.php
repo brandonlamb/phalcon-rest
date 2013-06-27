@@ -2,8 +2,8 @@
 
 namespace Api\Controllers;
 
-use \Api\Controller\Base as BaseController,
-	\Api\Exceptions\Http as HttpException;
+use \App\Controller\Base as BaseController,
+	\App\Exception\Http as HttpException;
 
 class IndexController extends BaseController
 {

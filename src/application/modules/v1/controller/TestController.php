@@ -2,13 +2,12 @@
 
 namespace Api\Controllers;
 
-use \Api\Controller\Base as BaseController,
-	\Api\Exceptions\Http as HttpException;
+use \App\Controller\Base as BaseController,
+	\App\Exception\Http as HttpException;
 
 class TestController extends BaseController
 {
-
-	private $exampleRecords = array(
+	protected $exampleRecords = array(
 		array('id' => 1, 'name' => 'Ariel', 'location' => 'Under The Sea', 'prince_name' => 'Eric', 'popular' => 'false'),
 		array('id' => 2, 'name' => 'Snow White', 'location' => 'Forest', 'prince_name' => 'The Prince', 'popular' => 'true'),
 		array('id' => 3, 'name' => 'Belle', 'location' => 'France', 'prince_name' => 'The Beast', 'popular' => 'false'),
@@ -21,7 +20,8 @@ class TestController extends BaseController
 	public function getAction()
 	{
 		#d('hello');
-		d($this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords));
+#		d($this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords));
+		throw new \Exception('testing');
 		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 	}
 
@@ -48,66 +48,5 @@ class TestController extends BaseController
 	public function patchAction($id)
 	{
 		return array('Patch / stub');
-	}
-
-	public function searchAction()
-	{
-		$results = array();
-		foreach ($this->exampleRecords as $record) {
-			$match = true;
-			foreach ($this->searchFields as $field => $value) {
-				if (!(strpos($record[$field], $value) !== false)) {
-					$match = false;
-				}
-			}
-			if ($match) {
-				$results[] = $record;
-			}
-		}
-
-		return $results;
-	}
-
-	public function respond($results)
-	{
-		if ($this->isPartial) {
-			$newResults = array();
-			$remove = array_diff(array_keys($this->exampleRecords[0]), $this->partialFields);
-			foreach ($results as $record) {
-				$newResults[] = $this->array_remove_keys($record, $remove);
-			}
-			$results = $newResults;
-		}
-
-		if ($this->offset) {
-			$results = array_slice($results, $this->offset);
-		}
-
-		if ($this->limit) {
-			$results = array_slice($results, 0, $this->limit);
-		}
-
-		return $results;
-	}
-
-	private function array_remove_keys($array, $keys = array())
-	{
-	    // If array is empty or not an array at all, don't bother doing anything else.
-	    if (empty($array) || (! is_array($array))) {
-	        return $array;
-	    }
-
-	    // At this point if $keys is not an array, we can't do anything with it.
-	    if (! is_array($keys)) {
-	        return $array;
-	    }
-
-	    // array_diff_key() expected an associative array.
-	    $assocKeys = array();
-	    foreach ($keys as $key) {
-	        $assocKeys[$key] = true;
-	    }
-
-	    return array_diff_key($array, $assocKeys);
 	}
 }

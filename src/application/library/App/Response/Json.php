@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Response;
+namespace App\Response;
 
 class Json extends AbstractResponse
 {
@@ -10,7 +10,7 @@ class Json extends AbstractResponse
 	public function send($records, $error = false)
 	{
 		// Error's come from HTTPException.  This helps set the proper envelope data
-		$response = $this->di->get('response');
+		$response = $this->di->getShared('response');
 		$success = ($error) ? 'ERROR' : 'SUCCESS';
 
 		// If the query string 'envelope' is set to false, do not use the envelope. Instead, return headers.
@@ -28,20 +28,21 @@ class Json extends AbstractResponse
 
 		if ($this->envelope) {
 			// Provide an envelope for JSON responses.  '_meta' and 'records' are the objects.
-			$message = array();
-			$message['_meta'] = array(
-				'status' => $success,
-				'count' => ($error) ? 1 : count($records)
+			$message = array(
+				'_meta' => array(
+					'status'	=> $success,
+					'count'		=> ($error) ? 1 : count($records),
+				),
+				'records' => $records,
 			);
-			$message['records'] = $records;
 		} else {
 			$response->setHeader('X-Record-Count', count($records));
 			$response->setHeader('X-Status', $success);
 			$message = $records;
 		}
 
-		$response->setContentType('application/json');
-		$response->setHeader('E-Tag', $etag);
+#		$response->setContentType('application/json');
+#		$response->setHeader('E-Tag', $etag);
 
 		// HEAD requests are detected in the parent constructor.
 		// HEAD does everything exactly the same as GET, but contains no body.
@@ -49,7 +50,10 @@ class Json extends AbstractResponse
 			$response->setJsonContent($message);
 		}
 
-		$response->send();
+#		$response->send();
+d('x');
+d($response);
+return $response;
 
 		return $this;
 	}
