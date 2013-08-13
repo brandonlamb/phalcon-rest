@@ -14,14 +14,25 @@ class TestController extends BaseController
 		array('id' => 4, 'name' => 'Nala', 'location' => 'Pride Rock', 'prince_name' => 'Simba', 'popular' => 'true'),
 		array('id' => 5, 'name' => 'Sleeping Beauty', 'location' => 'Castle', 'prince_name' => 'Charming', 'popular' => 'true'),
 		array('id' => 6, 'name' => 'Jasmine', 'location' => 'Aghraba', 'prince_name' => 'Aladdin', 'popular' => 'true'),
-		array('id' => 7, 'name' => 'Mulan', 'location' => 'China', 'prince_name' => 'Li Shang', 'popular' => 'false')
+		array('id' => 7, 'name' => 'Mulan', 'location' => 'China', 'prince_name' => 'Li Shang', 'popular' => 'false'),
+	);
+
+	/**
+	 * {@inheritdoc}
+	 */
+	protected $allowedFields = array(
+		'search'	=> array(),
+		'partials'	=> array('id'),
 	);
 
 	public function getAction()
 	{
-		#d('hello');
+#		d('hello');
 #		d($this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords));
-		throw new \Exception('testing');
+#		throw new \Exception('testing1');
+#		throw new HttpException('testing2');
+
+#		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 	}
 

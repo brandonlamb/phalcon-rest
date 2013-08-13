@@ -90,10 +90,14 @@ class Base extends PhInjectable
 #		$this->loadMainTrans();
 	}
 
+	/**
+	 * Define any logic that needs to happen before executing the route
+	 * @param \Phalcon\Events\Event $event
+	 * @param \Phalcon\Mvc\Dispatcher $dispatcher
+	 */
 	public function beforeExecuteRoute(\Phalcon\Events\Event $event, \Phalcon\Mvc\Dispatcher $dispatcher)
 	{
-#d(__METHOD__);
-#echo __METHOD__ . "<br>\n";
+
 	}
 
 	public function afterExecuteRoute(\Phalcon\Events\Event $event, \Phalcon\Mvc\Dispatcher $dispatcher)
@@ -103,8 +107,7 @@ class Base extends PhInjectable
 		// OPTIONS have no body, send the headers, exit
 		if ($request->getMethod() == 'OPTIONS') {
 			$this->response->setStatusCode('200', 'OK');
-			$this->response->send();
-			return;
+			exit($this->response->send());
 		}
 
 		// Respond by default as JSON
@@ -112,17 +115,13 @@ class Base extends PhInjectable
 			// Results returned from the route's controller.  All Controllers should return an array
 			$records = $this->dispatcher->getReturnedValue();
 			$response = new \App\Response\Json($this->di);
-			$response->useEnvelope(true) //this is default behavior
+			exit($response->useEnvelope(true) //this is default behavior
 				->convertSnakeCase(true) //this is also default behavior
-				->send($records);
-
-			return;
-		} else if ($request->get('type') == 'csv') {
+				->send($records));
+		} elseif ($request->get('type') == 'csv') {
 			$records = $this->dispatcher->getReturnedValue();
 			$response = new \App\Response\Csv();
-			$response->useHeaderRow(true)->send($records);
-
-			return;
+			exit($response->useHeaderRow(true)->send($records));
 		} else {
 			throw new HttpException(
 				'Could not return results in specified format',
@@ -171,9 +170,8 @@ class Base extends PhInjectable
 		if ($searchParams) {
 			$this->isSearch = true;
 			$this->searchFields = $this->parseSearchParameters($searchParams);
-
 			// This handly snippet determines if searchFields is a strict subset of allowedFields['search']
-			if (!array_unique($allowedFields['search'] + $this->searchFields) === $allowedFields['search']) {
+			if (array_diff(array_keys($this->searchFields), $this->allowedFields['search'])) {
 				throw new HttpException(
 					"The fields you specified cannot be searched.",
 					401,
@@ -192,7 +190,7 @@ class Base extends PhInjectable
 			$this->partialFields = $this->parsePartialFields($fields);
 
 			// Determines if fields is a strict subset of allowed fields
-			if (!array_unique($allowedFields['partials'] + $this->partialFields) === $allowedFields['partials']) {
+			if (array_diff($this->partialFields, $this->allowedFields['partials'])) {
 				throw new HttpException(
 					'The fields you asked for cannot be returned.',
 					401,
@@ -308,7 +306,8 @@ class Base extends PhInjectable
 		}
 
 		$this->view->setVar('data', $results);
-#		return $results;
+
+		return $results;
 	}
 
 	private function arrayRemoveKeys($array, $keys = array())

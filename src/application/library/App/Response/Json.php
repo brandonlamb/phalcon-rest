@@ -11,7 +11,7 @@ class Json extends AbstractResponse
 	{
 		// Error's come from HTTPException.  This helps set the proper envelope data
 		$response = $this->di->getShared('response');
-		$success = ($error) ? 'ERROR' : 'SUCCESS';
+		$success = ($error) ? 'fail' : 'ok';
 
 		// If the query string 'envelope' is set to false, do not use the envelope. Instead, return headers.
 		$request = $this->di->get('request');
@@ -41,8 +41,8 @@ class Json extends AbstractResponse
 			$message = $records;
 		}
 
-#		$response->setContentType('application/json');
-#		$response->setHeader('E-Tag', $etag);
+		$response->setContentType('application/json');
+		$response->setHeader('E-Tag', $etag);
 
 		// HEAD requests are detected in the parent constructor.
 		// HEAD does everything exactly the same as GET, but contains no body.
@@ -50,11 +50,8 @@ class Json extends AbstractResponse
 			$response->setJsonContent($message);
 		}
 
-#		$response->send();
-d('x');
-d($response);
-return $response;
-
+		$response->send();
+#exit;
 		return $this;
 	}
 

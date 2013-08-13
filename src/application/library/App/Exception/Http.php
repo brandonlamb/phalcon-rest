@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace App\Exception;
 
 class Http extends \Exception
 {
@@ -9,25 +9,31 @@ class Http extends \Exception
 	public $response;
 	public $additionalInfo;
 
-	public function __construct($message, $code, $errorArray)
+	/**
+	 * An HTTP exception that knows how to respond
+	 * @param string $message
+	 * @param int $code
+	 * @param array $errors
+	 */
+	public function __construct($message, $code = 200, array $errors = array())
 	{
+		isset($errors['dev']) && $this->devMessage = $errors['dev'];
+		isset($errors['internalCode']) && $this->errorCode = $errors['internalCode'];
+		isset($errors['more']) && $this->additionalInfo = $errors['more'];
+
 		$this->message = $message;
-		$this->devMessage = @$errorArray['dev'];
-		$this->errorCode = @$errorArray['internalCode'];
 		$this->code = $code;
-		$this->additionalInfo = @$errorArray['more'];
 		$this->response = $this->getResponseDescription($code);
 	}
 
 	public function send()
 	{
-d(__METHOD__);
 		$di = \Phalcon\DI::getDefault();
 		$res = $di->get('response');
 		$req = $di->get('request');
 
-		//query string, filter, default
-		if (!$req->get('suppress_response_codes', null, null)) {
+		// query string, filter, default
+		if (null === $req->get('suppress_response_codes', null, null)) {
 			$res->setStatusCode($this->getCode(), $this->response)->sendHeaders();
 		} else {
 			$res->setStatusCode(200, 'OK')->sendHeaders();
@@ -42,18 +48,14 @@ d(__METHOD__);
 		);
 
 		if (!$req->get('type') || $req->get('type') == 'json') {
-			$response = new \PhalconRest\Responses\JSONResponse();
-			$response->send($error, true);
-			return;
-		} else if ($req->get('type') == 'csv') {
-			$response = new \PhalconRest\Responses\CSVResponse();
-			$response->send(array($error));
-			return;
+			$response = new \App\Response\Json();
+			return $response->send($error, true);
+		} elseif ($req->get('type') == 'csv') {
+			$response = new \App\Response\Csv();
+			return $response->send(array($error));
 		}
 
 		error_log('HttpException: ' . $this->getFile() . ' at ' . $this->getLine());
-
-		return true;
 	}
 
 	protected function getResponseDescription($code)

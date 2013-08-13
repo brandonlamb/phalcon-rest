@@ -118,6 +118,20 @@ class Application extends \Phalcon\Mvc\Application
 			require_once \PATH . '/application/config/request-body.php';
 		});
 	}
+
+	/**
+	 * Override parent to handle try/catch of errors
+	 */
+	public function run()
+	{
+		d('here');
+
+		try {
+			parent::run();
+		} catch (\Exception $e) {
+			die('Here: ' . $e->getMessage());
+		}
+	}
 }
 
 return new Application(new \Phalcon\DI\FactoryDefault());

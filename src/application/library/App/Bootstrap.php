@@ -21,7 +21,8 @@ use Phalcon\Mvc\Url as PhUrl,
 	Phalcon\Mvc\Router as PhRouter,
 	Phalcon\Mvc\Model\Metadata\Memory as PhMetadataMemory,
 	Phalcon\Session\Adapter\Files as PhSession,
-	Phalcon\Exception as PhException;
+	Phalcon\Exception as PhException,
+	\App\Exception\Http as HttpException;
 
 class Bootstrap
 {
@@ -62,32 +63,49 @@ class Bootstrap
 	 */
 	public function run($options = array())
 	{
-		$config = $this->di->getShared('config');
-		$this->app = new PhApplication($this->di);
+		try {
+			$config = $this->di->getShared('config');
+			$this->app = new PhApplication($this->di);
 
-		$this->initLoader($config, $options);
-		$this->initEnvironment($config, $options);
-		$this->initUrl($config, $options);
-		$this->initDispatcher($config, $options);
-		$this->initRouter($config, $options);
-		$this->initView($config, $options);
-		$this->initLogger($config, $options);
-		$this->initDatabase($config, $options);
-		$this->initCache($config, $options);
-		$this->initModules($config, $options);
-		$this->initRequestBody($config, $options);
+			$this->initLoader($config, $options);
+			$this->initEnvironment($config, $options);
+			$this->initUrl($config, $options);
+			$this->initDispatcher($config, $options);
+			$this->initRouter($config, $options);
+			$this->initView($config, $options);
+			$this->initLogger($config, $options);
+			$this->initDatabase($config, $options);
+			$this->initCache($config, $options);
+			$this->initModules($config, $options);
+			$this->initRequestBody($config, $options);
 
-#		return $this->app->handle()->getContent();
-#		return $this->app->handle();
-		$response1 = $this->app->handle();
-		$response2 = $this->di->getShared('response');
-d($response1);
-echo $response->send();
-#$dispatcher = $this->di->getShared('dispatcher');
-#$dispatcher->getEventsManager()->fire('dispatch:afterExcecuteRoute', $dispatcher);
-#d($response->getContent());
+#			$response = $this->app->handle()->getContent();
+			$response = $this->app->handle();
+#d($response);
+#$response->send();
+#exit;
+#d($response->send());
+#			$response->send();
 
-#		!$this->app->request->isAjax() && bench();
+#			return $this->app->handle();
+#			$response = $this->app->handle();
+#			echo $response->send();
+
+#			$dispatcher = $this->di->getShared('dispatcher');
+#			$dispatcher->getEventsManager()->fire('dispatch:afterExcecuteRoute', $dispatcher);
+#			d($response);
+
+			#		!$this->app->request->isAjax() && bench();
+		} catch (HttpException $e) {
+			// Catch proper exceptions
+#d(__LINE__);
+			$e->send();
+		} catch (\Exception $e) {
+#d(__LINE__);
+			// Catch all other exceptions and package into a new HttpException response
+			$response = new HttpException($e->getMessage(), 500);
+			$response->send();
+		}
 	}
 
 	/**
