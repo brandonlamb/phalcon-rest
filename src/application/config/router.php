@@ -10,7 +10,6 @@ $router->setUriSource(\Phalcon\Mvc\Router::URI_SOURCE_GET_URL);
 #$router->setUriSource(\Phalcon\Mvc\Router::URI_SOURCE_SERVER_REQUEST_URI);
 
 // Set default router options
-#$router->setDefaultModule($config->app->defaultModule);
 $router->setDefaults(array(
 	'module' => $config->app->defaultModule,
 	'controller' => $config->app->defaultController,
@@ -30,13 +29,13 @@ foreach (array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS') as $m
 	)->setHttpMethods($method);
 
 	$router->add(
-		'/:module/:controller/:int/:controller/:params',
+		'/:module/:controller/:action/:params',
 		array(
 			'module' => 1,
 			'controller' => 2,
-			'action' => strtolower($method),
-
-			'params' => 3,
+			'action' => $method,
+			'params' => 4,
+			'id' => 3,
 		)
 	)->setHttpMethods($method);
 }
