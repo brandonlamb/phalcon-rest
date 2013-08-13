@@ -159,7 +159,6 @@ class Base extends PhInjectable
 	 * Sets Controller fields for these variables.
 	 *
 	 * @param array $allowedFields Allowed fields array for search and partials
-	 * @return bool Always true if no exception is thrown
 	 */
 	protected function parseRequest($allowedFields)
 	{
@@ -176,6 +175,7 @@ class Base extends PhInjectable
 		if ($searchParams) {
 			$this->isSearch = true;
 			$this->searchFields = $this->parseSearchParameters($searchParams);
+
 			// This handly snippet determines if searchFields is a strict subset of allowedFields['search']
 			if (array_diff(array_keys($this->searchFields), $this->allowedFields['search'])) {
 				throw new HttpException(
@@ -207,8 +207,6 @@ class Base extends PhInjectable
 				));
 			}
 		}
-
-		return true;
 	}
 
 	/**
@@ -319,12 +317,12 @@ class Base extends PhInjectable
 	private function arrayRemoveKeys($array, $keys = array())
 	{
 		// If array is empty or not an array at all, don't bother doing anything else.
-		if (empty($array) || (! is_array($array))) {
+		if (empty($array) || (!is_array($array))) {
 			return $array;
 		}
 
 		// At this point if $keys is not an array, we can't do anything with it.
-		if (! is_array($keys)) {
+		if (!is_array($keys)) {
 			return $array;
 		}
 
@@ -337,13 +335,13 @@ class Base extends PhInjectable
 		return array_diff_key($array, $assocKeys);
 	}
 
-	public function searchAction()
+	public function search()
 	{
 		$results = array();
 		foreach ($this->exampleRecords as $record) {
 			$match = true;
 			foreach ($this->searchFields as $field => $value) {
-				if (!(strpos($record[$field], $value) !== false)) {
+				if (!(stripos($record[$field], $value) !== false)) {
 					$match = false;
 				}
 			}

@@ -21,18 +21,15 @@ class TestController extends BaseController
 	 * {@inheritdoc}
 	 */
 	protected $allowedFields = array(
-		'search'	=> array(),
-		'partials'	=> array('id'),
+		'search'	=> array('name', 'popular', 'prince_name'),
+		'partials'	=> array('id', 'name'),
 	);
 
 	public function getAction()
 	{
-#		d('hello');
-#		d($this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords));
 #		throw new \Exception('testing1');
 #		throw new HttpException('testing2');
 
-#		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 	}
 
