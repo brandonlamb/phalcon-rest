@@ -17,25 +17,11 @@ $router->setDefaults(array(
 	'action' => $config->app->defaultAction,
 ));
 
-$router->mount(new \App\Route\GenericGroup('location-group', 'LocationGroup'));
-
-//Set 404 paths
-$router->notFound(array(
-	'module' => 'v1',
-	'controller' => 'error',
-	'action' => 'notfound',
-));
-
-return $router;
-
-
-
 // Add REST API matches for each HTTP Method
 foreach (array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS') as $method) {
 	$router->add(
 		'/:module/:controller/:params',
 		array(
-#			'namespace' => 'Api\\Controller\\' . 2,
 			'module' => 1,
 			'controller' => 2,
 			'action' => $method,
@@ -55,7 +41,9 @@ foreach (array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS') as $m
 	)->setHttpMethods($method);
 }
 
-//Set 404 paths
+$router->mount(new \App\Route\GenericGroup('location-group', 'LocationGroup'));
+
+// Set 404 paths
 $router->notFound(array(
 	'module' => 'v1',
 	'controller' => 'error',
@@ -63,21 +51,3 @@ $router->notFound(array(
 ));
 
 return $router;
-
-/*
-$router->add('/documentation/([a-zA-Z0-9_]+)', array(
-	'controller'	=> 'documentation',
-	'action'		=> 'redirect',
-	'name'			=> 1,
-));
-
-$router->add('/documentation/index', array(
-	'controller'	=> 'documentation',
-	'action'		=> 'index',
-));
-
-$router->add('/documentation', array(
-	'controller'	=> 'documentation',
-	'action'		=> 'index',
-));
-*/

@@ -19,9 +19,9 @@ class HeaderController extends BaseController
 		'partials'	=> array('id', 'name'),
 	);
 
-	public function getAction()
+	public function getAction($id)
 	{
-		throw new HttpException('testing2');
+#		throw new HttpException($id);
 		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 	}
 

@@ -7,9 +7,9 @@ use Phalcon\Mvc\Router\Group as RouterGroup;
 class GenericGroup extends RouterGroup
 {
     /**
-     * @var string, resource group path in uri to search for
+     * @var string, uri search path
      */
-    protected $resourceGroup;
+    protected $uri;
 
     /**
      * Sub-namespace to use for this resource group
@@ -17,12 +17,12 @@ class GenericGroup extends RouterGroup
     protected $ns;
 
     /**
-     * @param string $resourceGroup, what to search the uri for
+     * @param string $uri, what to search the uri for
      * @param string @ns, the sub-namespace to use
      */
-    public function __construct($resourceGroup, $ns)
+    public function __construct($uri, $ns)
     {
-        $this->resourceGroup = (string) $resourceGroup;
+        $this->uri = (string) $uri;
         $this->ns = (string) $ns;
         parent::__construct();
     }
@@ -31,7 +31,7 @@ class GenericGroup extends RouterGroup
     {
         // Add collection route to the group
          $this->addGet(
-            '/:module/' . $this->resourceGroup . '/:controller/:params',
+            '/:module/' . $this->uri . '/:controller/:params',
             array(
                 'namespace' => 'Api\\Controller\\' . $this->ns . '\\Collection',
                 'module' => 1,
@@ -44,7 +44,7 @@ class GenericGroup extends RouterGroup
         // Add instance route to the group
         foreach (array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS') as $method) {
             $this->add(
-                '/:module/' . $this->resourceGroup . '/:controller/:action/:params',
+                '/:module/' . $this->uri . '/:controller/:action/:params',
                 array(
                     'namespace' => 'Api\\Controller\\' . $this->ns . '\\Instance',
                     'module' => 1,

@@ -27,9 +27,6 @@ class HeaderController extends BaseController
 
 	public function getAction()
 	{
-#		throw new \Exception('testing1');
-#		throw new HttpException('testing2');
-
 		return $this->respond(($this->isSearch) ? $this->search() : $this->exampleRecords);
 	}
 
