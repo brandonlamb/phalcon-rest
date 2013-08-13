@@ -14,7 +14,7 @@ class Module implements ModuleInterface
 	{
 		$loader = new \Phalcon\Loader();
 		$loader->registerNamespaces(array(
-			'Api\\Controllers' => \ROOT_PATH . '/application/modules/v1/controller/',
+			'Api\\Controller' => \ROOT_PATH . '/application/modules/v1/controller/',
 			'Api\\Model' => \ROOT_PATH . '/application/modules/v1/model/',
 		));
 		$loader->register();
@@ -34,7 +34,7 @@ class Module implements ModuleInterface
 #			$eventManager->attach('dispatch', new \Acl('frontend'));
 
 			$dispatcher->setEventsManager($eventManager);
-			$dispatcher->setDefaultNamespace('Api\\Controllers\\');
+			$dispatcher->setDefaultNamespace('Api\\Controller\\');
 
 			return $dispatcher;
 		}, true);

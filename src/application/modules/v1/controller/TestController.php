@@ -1,6 +1,6 @@
 <?php
 
-namespace Api\Controllers;
+namespace Api\Controller;
 
 use \App\Controller\Base as BaseController,
 	\App\Exception\Http as HttpException;
@@ -37,24 +37,5 @@ class TestController extends BaseController
 	{
 		$id--;
 		return (@count($this->exampleRecords[$id])) ? $this->respond($this->exampleRecords[$id]) : $this->respond(array());
-	}
-
-	public function postAction()
-	{
-		return array('Post / stub');
-	}
-
-	public function deleteAction($id) {
-		return array('Delete / stub');
-	}
-
-	public function putAction($id)
-	{
-		return array('Put / stub');
-	}
-
-	public function patchAction($id)
-	{
-		return array('Patch / stub');
 	}
 }

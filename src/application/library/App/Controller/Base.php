@@ -72,12 +72,10 @@ class Base extends PhInjectable
 	protected $data = array();
 
 	/**
-	 * Constructor calls the parse method.
-	 * We override __construct() because we cannot call parent::__construct()
+	 * Called after construct
 	 */
-	public function __construct()
+	public function onConstruct()
 	{
-		$this->setDI(Di::getDefault());
 		$this->parseRequest($this->allowedFields);
 	}
 
@@ -399,5 +397,40 @@ class Base extends PhInjectable
 
 		//Set $t as controller's translation object
 		$this->view->setVar('t', $controllerTranslate);
+	}
+
+	public function getAction()
+	{
+		throw new HttpException('Method not implemented', 501);
+	}
+
+	public function postAction()
+	{
+		throw new HttpException('Method not implemented', 501);
+	}
+
+	public function putAction()
+	{
+		throw new HttpException('Method not implemented', 501);
+	}
+
+	public function patchAction()
+	{
+		throw new HttpException('Method not implemented', 501);
+	}
+
+	public function deleteAction()
+	{
+		throw new HttpException('Method not implemented', 501);
+	}
+
+	public function headAction()
+	{
+		throw new HttpException('Method not implemented', 501);
+	}
+
+	public function optionsAction()
+	{
+		throw new HttpException('Method not implemented', 501);
 	}
 }

@@ -1,14 +1,10 @@
 <?php
 
-namespace Api\Controllers;
+namespace Api\Controller;
 
 use \App\Controller\Base as BaseController,
 	\App\Exception\Http as HttpException;
 
 class IndexController extends BaseController
 {
-	public function getAction()
-	{
-		die('hello');
-	}
 }
