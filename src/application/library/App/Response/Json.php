@@ -51,7 +51,7 @@ class Json extends AbstractResponse
 		}
 
 		$response->send();
-#exit;
+
 		return $this;
 	}
 

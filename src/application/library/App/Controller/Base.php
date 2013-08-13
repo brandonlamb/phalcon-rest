@@ -100,6 +100,12 @@ class Base extends PhInjectable
 
 	}
 
+	/**
+	 * After execution of the route finishes, run this method.
+	 * Here we figure out which response to create, send the response, then exit.
+	 * @param \Phalcon\Events\Event $event
+	 * @param \Phalcon\Mvc\Dispatcher $dispatcher
+	 */
 	public function afterExecuteRoute(\Phalcon\Events\Event $event, \Phalcon\Mvc\Dispatcher $dispatcher)
 	{
 		$request = $this->request;
