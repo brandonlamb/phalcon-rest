@@ -147,7 +147,7 @@ class Bootstrap
 
 		set_exception_handler(function($exception) use ($di, $app) {
 			// HttpException's send method provides the correct response headers and body
-			if (is_a($exception, 'App\\Exception\\HttpException')) {
+			if (is_a($exception, 'App\\Exception\\Http')) {
 				$exception->send();
 			}
 
