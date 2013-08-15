@@ -8,17 +8,21 @@ A good API will support versionioning, making it easier for consumers to upgrade
 * Support media type version mapping
 
 # Resource based api mapping
-** Resource/Collection
-** Resource/Instance
 
-* Support for multiple response types
-** JSON (default)
-** CSV
-** XML
+* Resource/Collection
+* Resource/Instance
 
-* Attempt swappable DBAL
-** Spot
-** Phalcon
+# Support for multiple response types
 
-* Advanced resource routing
-** /v1/resource/id/relation/relationId 
+* JSON (default)
+* CSV
+* XML
+
+# Attempt swappable DBAL
+
+* Spot
+* Phalcon
+
+# Advanced resource routing
+
+* /v1/resource/id/relation/relationId
