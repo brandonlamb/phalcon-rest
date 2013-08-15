@@ -11,42 +11,42 @@ $router->setUriSource(\Phalcon\Mvc\Router::URI_SOURCE_GET_URL);
 
 // Set default router options
 $router->setDefaults(array(
-	'module' => $config->app->defaultModule,
-	'controller' => $config->app->defaultController,
-	'action' => $config->app->defaultAction,
+    'module' => $config->app->defaultModule,
+    'controller' => $config->app->defaultController,
+    'action' => $config->app->defaultAction,
 ));
 
 // Add REST API matches for each HTTP Method
 foreach (array('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS') as $method) {
-	$router->add(
-		'/:module/:controller/:params',
-		array(
-			'module' => 1,
-			'controller' => 2,
-			'action' => $method,
-			'params' => 3,
-		)
-	)->setHttpMethods($method);
+    $router->add(
+        '/:module/:controller/:params',
+        array(
+            'module' => 1,
+            'controller' => 2,
+            'action' => $method,
+            'params' => 3,
+        )
+    )->setHttpMethods($method);
 
-	$router->add(
-		'/:module/:controller/:action/:params',
-		array(
-			'module' => 1,
-			'controller' => 2,
-			'action' => $method,
-			'params' => 4,
-			'id' => 3,
-		)
-	)->setHttpMethods($method);
+    $router->add(
+        '/:module/:controller/:action/:params',
+        array(
+            'module' => 1,
+            'controller' => 2,
+            'action' => $method,
+            'params' => 4,
+            'id' => 3,
+        )
+    )->setHttpMethods($method);
 }
 
 $router->mount(new \App\Route\GenericGroup('location-group', 'LocationGroup'));
 
 // Set 404 paths
 $router->notFound(array(
-	'module' => 'v1',
-	'controller' => 'error',
-	'action' => 'notfound',
+    'module' => 'v1',
+    'controller' => 'error',
+    'action' => 'notfound',
 ));
 
 return $router;

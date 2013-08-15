@@ -2,14 +2,14 @@
 
 function bench()
 {
-	$now = microtime(true);
-	$data = json_encode(array(
-		'Runtime in milliseconds' => number_format(($now - \START_TIME) * 1000, 2),
-		'Runtime in microseconds' => number_format(($now - \START_TIME), 5),
-		'Peak memory in KB' => number_format(memory_get_peak_usage() / 1024, 2),
-		'Included files' => count(get_included_files()),
-	));
-	echo "\n<script>console.log($data);</script>";
+    $now = microtime(true);
+    $data = json_encode(array(
+        'Runtime in milliseconds' => number_format(($now - \START_TIME) * 1000, 2),
+        'Runtime in microseconds' => number_format(($now - \START_TIME), 5),
+        'Peak memory in KB' => number_format(memory_get_peak_usage() / 1024, 2),
+        'Included files' => count(get_included_files()),
+    ));
+    echo "\n<script>console.log($data);</script>";
 }
 
 /**
@@ -17,16 +17,16 @@ function bench()
  */
 function d()
 {
-	$string = '';
-	foreach(func_get_args() as $value)
-	{
-		$string .= '<pre>';
-		$string .= $value === NULL ? 'NULL' : (is_scalar($value) ? $value : print_r($value, TRUE));
-		$string .= "</pre>\n";
-	}
-	echo $string;
-	bench();
-	die;
+    $string = '';
+    foreach(func_get_args() as $value)
+    {
+        $string .= '<pre>';
+        $string .= $value === NULL ? 'NULL' : (is_scalar($value) ? $value : print_r($value, TRUE));
+        $string .= "</pre>\n";
+    }
+    echo $string;
+    bench();
+    die;
 }
 
 /**
@@ -34,12 +34,12 @@ function d()
  */
 function dump()
 {
-	$string = '';
-	foreach(func_get_args() as $value)
-	{
-		$string .= '<pre>';
-		$string .= $value === NULL ? 'NULL' : (is_scalar($value) ? $value : print_r($value, TRUE));
-		$string .= "</pre>\n";
-	}
-	echo $string;
+    $string = '';
+    foreach(func_get_args() as $value)
+    {
+        $string .= '<pre>';
+        $string .= $value === NULL ? 'NULL' : (is_scalar($value) ? $value : print_r($value, TRUE));
+        $string .= "</pre>\n";
+    }
+    echo $string;
 }
