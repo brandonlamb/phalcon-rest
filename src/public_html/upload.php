@@ -9,7 +9,14 @@ header('Access-Control-Allow-Credentials: true');
 header('Content-Type: application/json');
 
 sleep(2);
-exit(json_encode(array('success' => true)));
+
+$data = array(
+	'files' => array(
+		array('name' => 'filename'),
+	),
+);
+
+exit(json_encode($data));
 ?>
 <pre>
 
