@@ -11,5 +11,10 @@
             "email": "brandon@brandonlamb.com"
         }
     ],
-    "minimum-stability": "alpha"
+    "minimum-stability": "alpha",
+    "autoload": {
+        "psr-0": {
+            "App": "src/library/App"
+        }
+    }
 }

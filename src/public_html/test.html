@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Boilerplate file input</title>
+
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+
+    <style type="text/css">
+.prettyFile > input { display: none !important; }
+/*  The rest is from Twitter Bootstrap */
+input,
+.input-append { display: inline-block; vertica-align: middle; }
+ 
+.input-large {
+    border: 1px solid rgba(82, 168, 236, 0.8);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);
+    border-radius: 3px 0 0 3px;
+    font-size: 14px;
+    height: 20px;
+    color: #555;
+    padding: 4px 6px;
+    margin-right: -4px;
+    width: 210px;
+}
+a .btn {
+    background-image: -webkit-linear-gradient(top, white, #E6E6E6);
+    background-repeat: repeat-x;
+    border: 1px solid rgba(0, 0, 0, 0.14902);
+    box-shadow: rgba(255, 255, 255, 0.2) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.0470588) 0px 1px 2px 0px;
+    color: #333;
+    display: inline-block;
+    font-family: Tahoma, sans-serif;
+    font-size: 14px;
+    margin: 0 0 0 -1px;
+    padding: 4px 14px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    text-decoration: none;
+    text-shadow: rgba(255, 255, 255, 0.74902) 0px 1px 1px;
+    vertical-align: top;
+	width: 47px;
+}
+    </style>
+</head>
+<body>
+	<div style="margin: 0 auto; width: 960px">
+		<!--form id="upload" action="upload.php" method="POST" enctype="multipart/form-data" -->
+		<form action="upload.php" name="form1" method="POST" enctype="multipart/form-data">
+			<h1>Upload Files</h1>
+
+			<span class="prettyFile">
+			    <input type="file" name="files[]" multiple="multiple" accept="image/*">
+			    <div class="input-append">
+			       <input class="input-large" type="text">
+			       <a href="#" class="btn">Browse</a>
+			    </div>
+			</span>
+			<div class="input">
+				<input class="btn btn-primary" type="submit" value="Upload Files">
+			</div>
+		</form>
+	</div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var fileInput = $('.prettyFile input[type="file"]');
+			var fileList = [];
+
+			fileInput.change(function () {
+	            // When original file input changes, get its value, show it in the fake input
+	            var files = this.files;
+	            var info = '';
+
+	            if (files.length > 1) {
+	                // Display number of selected files instead of filenames
+	                info = files.length + ' files selected';
+	            } else {
+	                // Display filename (without fake path)
+	                var path = fileInput.val().split('\\');
+	                info = path[path.length - 1];
+	            }
+
+	            $('.input-append input').val(info);
+
+				// Reset fileList
+				fileList = [];
+				$.each(files, function(i, item) {
+					fileList.push(item);
+				});
+
+			});
+
+	        $('.input-append').click(function(e) {
+	            e.preventDefault();
+	            // Make as the real input was clicked
+	            fileInput.click();
+	        })
+
+			var $form = $('form[name="form1"]');
+			$form.on('submit', function (e) {
+				e.preventDefault();
+
+				var formData = new FormData();
+				$.each(fileList, function(i, item) {
+					formData.append('X-FILE-' + i, item);
+				});
+
+				$.ajax({
+					url: '/upload.php',
+					type: 'POST',
+					data: formData,
+					cache: false,
+					contentType: false,
+					processData: false,
+
+					success: function (data) {
+						console.log(data);
+						alert('did it');
+					}
+				});
+			});
+		});
+	</script>
+</body>
+</html>
